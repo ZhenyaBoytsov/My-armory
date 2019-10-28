@@ -82,7 +82,7 @@ class ball():
             Возвращает True в случае столкновения мяча и цели. В противном случае возвращает False.
         """
         # FIXME
-        return False
+        return ((obj.x-self.x)*(obj.x-self.x) + (obj.y-self.y)*(obj.y-self.y) <= (obj.r+self.r)*(obj.r+self.r))
 
 
 class gun():
