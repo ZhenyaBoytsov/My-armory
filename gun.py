@@ -11,6 +11,7 @@ root.geometry('800x600')
 canv = tk.Canvas(root, bg='white')
 canv.pack(fill=tk.BOTH, expand=1)
 
+g = -1
 
 class ball():
     def __init__(self, x=40, y=450):
@@ -52,8 +53,25 @@ class ball():
         и стен по краям окна (размер окна 800х600).
         """
         # FIXME
+        self.y += -self.vy
         self.x += self.vx
-        self.y -= self.vy
+        self.vy += g
+        self.set_coords()
+        if self.y - self.vy > 600 - self.r:
+            self.vy = -self.vy
+            self.live -= 5
+        if self.y - self.vy < self.r:
+            self.vy = -self.vy
+            self.live -= 5
+        if self.x > 800 - self.r:
+            self.vx = -self.vx
+            self.live -= 5
+        if self.x < self.r:
+            self.vx = -self.vx
+            self.live -= 5
+        if self.live <= 0:
+            balls.pop(balls.index(self))
+            canv.delete(self.id)
 
     def hittest(self, obj):
         """Функция проверяет сталкивалкивается ли данный обьект с целью, описываемой в обьекте obj.
