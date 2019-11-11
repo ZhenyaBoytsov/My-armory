@@ -153,7 +153,7 @@ class target():
         """ Инициализация новой цели. """
         x = self.x = rnd(600, 780)
         y = self.y = rnd(300, 550)
-        r = self.r = 20
+        r = self.r = rnd(10, 30)
         color = self.color = 'red'
         canv.coords(self.id, x-r, y-r, x+r, y+r)
         canv.itemconfig(self.id, fill=color)
@@ -166,10 +166,9 @@ class target():
         canv.itemconfig(id_points, text=sum_points)
 
     def move(self):
-        x = rnd(100, 750)
-        y = rnd(50, 550)
-        #canv.coords(self.id, x-20, y-20, x+20, y+20)
-        canv.coords(self.id, x-20, y-20, x+20, y+20)
+        x = min(max(100, self.x + rnd(-100, 100)), 750)
+        y = min(max(50, self.y + rnd(-100, 100)), 550)
+        canv.coords(self.id, x-self.r, y-self.r, x+self.r, y+self.r)
 
 
 t = [target(), target()]
