@@ -53,21 +53,26 @@ class ball():
         и стен по краям окна (размер окна 800х600).
         """
         # FIXME
+        damp = 0.5 #empiric
         self.y += -self.vy
         self.x += self.vx
         self.vy += g
         self.set_coords()
         if self.y - self.vy > 600 - self.r:
-            self.vy = -self.vy
+            self.vy = -damp*self.vy
+            self.y = 600 - self.r
             self.live -= 5
         if self.y - self.vy < self.r:
-            self.vy = -self.vy
+            self.vy = -damp*self.vy
+            self.y = self.r
             self.live -= 5
         if self.x > 800 - self.r:
-            self.vx = -self.vx
+            self.vx = -damp*self.vx
+            self.x = 800 - self.r
             self.live -= 5
         if self.x < self.r:
-            self.vx = -self.vx
+            self.vx = -damp*self.vx
+            self.x = self.r
             self.live -= 5
         if self.live <= 0:
             balls.pop(balls.index(self))
@@ -133,6 +138,8 @@ class gun():
         else:
             canv.itemconfig(self.id, fill='black')
 
+id_points = canv.create_text(30,30,text = 0,font = '28')
+sum_points = 0
 
 class target():
     def __init__(self):
@@ -140,7 +147,6 @@ class target():
         self.live = 1 #Что значит комментарий снизу? Не совсем понял формулировку проблемы.
         # FIXME: don't work!!! How to call this functions when object is created?
         self.id = canv.create_oval(0,0,0,0)
-        self.id_points = canv.create_text(30,30,text = self.points,font = '28')
         self.new_target()
 
     def new_target(self):
@@ -155,11 +161,12 @@ class target():
     def hit(self, points=1):
         """Попадание шарика в цель."""
         canv.coords(self.id, -10, -10, -10, -10)
-        self.points += points
-        canv.itemconfig(self.id_points, text=self.points)
+        global sum_points
+        sum_points += points
+        canv.itemconfig(id_points, text=sum_points)
 
 
-t1 = target()
+t = [target(), target()]
 screen1 = canv.create_text(400, 300, text='', font='28')
 g1 = gun()
 bullet = 0
@@ -167,34 +174,35 @@ balls = []
 
 
 def new_game(event=''):
-    global gun, t1, screen1, balls, bullet
-    t1.new_target()
+    global gun, t, screen1, balls, bullet, sum_points
+    for target in t:
+        target.new_target()
+    sum_points = 0
     bullet = 0
     balls = []
     canv.bind('<Button-1>', g1.fire2_start)
     canv.bind('<ButtonRelease-1>', g1.fire2_end)
     canv.bind('<Motion>', g1.targetting)
+    canv.itemconfig(id_points, text=sum_points)
 
     z = 0.03
-    t1.live = 1
-    while t1.live or balls:
+    for target in t:
+        target.live = 1
+    while sum(target.live for target in t) or balls:
         for b in balls:
             b.move()
-            if b.hittest(t1) and t1.live:
-                t1.live = 0
-                t1.hit()
-                canv.bind('<Button-1>', '')
-                canv.bind('<ButtonRelease-1>', '')
-                canv.itemconfig(screen1, text='Вы уничтожили цель за ' + str(bullet) + ' выстрелов')
+            for target in t:
+                if b.hittest(target) and target.live:
+                    target.live = 0
+                    target.hit()
         canv.update()
         time.sleep(0.03)
         g1.targetting()
         g1.power_up()
-    canv.itemconfig(screen1, text='')
+    canv.bind('<Button-1>', '')
+    canv.bind('<ButtonRelease-1>', '')
     canv.delete(gun)
-    root.after(750, new_game)
 
-
-new_game()
-
-mainloop()
+while True:
+    new_game()
+    time.sleep(0.750)
